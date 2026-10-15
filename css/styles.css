@@ -1,0 +1,359 @@
+/* ============================================================
+   Sample Medical Book — Group Health Pricing Model
+   Editorial Minimalist Design System
+   Extended with Excel-like worksheet tab bar
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── Design Tokens ───────────────────────────────────────── */
+:root {
+  --bg-sidebar: #F8F6F0;
+  --bg-sidebar-hover: #EFECE3;
+  --bg-canvas: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FAF8F4;
+  --bg-chip: #FAF8F4;
+  --bg-chip-highlight: #FEF9EB;
+
+  --border-sidebar: #EAE6DC;
+  --border-card: #ECE7DE;
+  --border-subtle: #F2EFEB;
+  --border-chip: #E8E3D7;
+  --border-chip-highlight: #F0E6C2;
+
+  --text-primary: #141413;
+  --text-secondary: #56554F;
+  --text-muted: #87857E;
+  --text-dimmed: #B0ADA6;
+
+  --badge-draft-bg: #FDF2E9;
+  --badge-draft-text: #C25E2E;
+  --badge-active-bg: #EDF7EE;
+  --badge-active-text: #2E7D32;
+
+  --accent-terracotta: #C25E2E;
+  --accent-green: #2E7D32;
+  --accent-navy: #1E3A5F;
+
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --sidebar-width: 240px;
+}
+
+/* ── Reset & Global ──────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: var(--font-sans); background: var(--bg-canvas); color: var(--text-primary); line-height: 1.5; min-height: 100vh; }
+
+/* ── Layout ──────────────────────────────────────────────── */
+.app-container { display: flex; min-height: 100vh; }
+
+/* ── Left Sidebar ────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-sidebar);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  padding: 32px 20px 24px 24px;
+  z-index: 100;
+}
+
+.sidebar-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; text-decoration: none; color: var(--text-primary); }
+.brand-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.brand-icon svg { width: 18px; height: 18px; fill: var(--text-primary); }
+.brand-name { font-family: var(--font-sans); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.nav-link {
+  display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px;
+  color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;
+  text-decoration: none; cursor: pointer; transition: all 0.15s ease; user-select: none;
+}
+.nav-link svg { width: 17px; height: 17px; stroke: var(--text-muted); stroke-width: 1.8; fill: none; transition: stroke 0.15s ease; }
+.nav-link:hover { background: var(--bg-sidebar-hover); color: var(--text-primary); }
+.nav-link:hover svg { stroke: var(--text-primary); }
+.nav-link.active { color: var(--text-primary); font-weight: 600; }
+.nav-link.active svg { stroke: var(--text-primary); }
+
+.sidebar-user { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-sidebar); }
+.user-team { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 2px; }
+.user-name-row { display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-size: 0.92rem; font-weight: 600; cursor: default; }
+.user-name-row svg { width: 14px; height: 14px; stroke: var(--text-muted); }
+
+/* ── Main Workspace ──────────────────────────────────────── */
+.main-content { margin-left: var(--sidebar-width); flex: 1; background: var(--bg-canvas); padding: 40px 56px 80px 56px; max-width: 1440px; }
+
+/* ── Header ──────────────────────────────────────────────── */
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 0.88rem; font-weight: 500; text-decoration: none; margin-bottom: 12px; cursor: pointer; transition: color 0.15s ease; }
+.back-link:hover { color: var(--text-primary); }
+.back-link svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+.page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.title-left { display: flex; align-items: center; gap: 14px; }
+.page-title { font-family: var(--font-serif); font-size: 2.15rem; font-weight: 500; letter-spacing: -0.4px; color: var(--text-primary); }
+.badge-draft { background: var(--badge-draft-bg); color: var(--badge-draft-text); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; }
+.header-actions { display: flex; align-items: center; gap: 16px; }
+.btn-link { background: none; border: none; color: var(--text-primary); font-size: 0.88rem; font-weight: 500; cursor: pointer; padding: 8px 12px; }
+.btn-link:hover { color: var(--text-muted); }
+.btn-pill { background: #FFFFFF; border: 1px solid var(--border-sidebar); border-radius: 9999px; padding: 8px 18px; font-size: 0.88rem; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: all 0.15s ease; font-family: var(--font-sans); }
+.btn-pill:hover { border-color: var(--text-primary); }
+
+/* ── Top-Level Tabs (Overview / Pricing Engine) ──────────── */
+.nav-tabs { display: flex; gap: 32px; border-bottom: 1px solid var(--border-card); margin-bottom: 32px; }
+.tab-btn {
+  font-family: var(--font-serif); font-size: 1.35rem; font-weight: 500;
+  color: var(--text-muted); background: none; border: none; padding-bottom: 12px;
+  cursor: pointer; position: relative; transition: color 0.15s ease;
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--text-primary); }
+.tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--text-primary); }
+
+/* ── Module Visibility ───────────────────────────────────── */
+.module-view { display: none; }
+.module-view.active { display: block; }
+
+/* ── Layout Helpers ──────────────────────────────────────── */
+.two-column-workspace { display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start; }
+.full-width-workspace { width: 100%; }
+
+/* ── Editorial Cards ─────────────────────────────────────── */
+.editorial-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.editorial-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.card-heading { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); }
+.card-caption { font-size: 0.82rem; color: var(--text-muted); }
+
+/* ── Tables ──────────────────────────────────────────────── */
+.editorial-table-container { border: 1px solid var(--border-card); border-radius: 12px; overflow: hidden; background: #FFFFFF; }
+.editorial-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.editorial-table th { background: #FFFFFF; padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-card); font-size: 0.82rem; }
+.editorial-table th.num-col, .editorial-table td.num-col { text-align: right; }
+.editorial-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); vertical-align: middle; }
+.editorial-table tr:last-child td { border-bottom: none; }
+.editorial-table tr.total-row { border-top: 1px solid var(--border-card); font-weight: 700; }
+.editorial-table tr.total-row td { background: var(--bg-card-subtle); }
+.editorial-table input[type="number"] {
+  width: 80px; padding: 4px 6px; border: 1px solid transparent; background: transparent;
+  font-family: var(--font-sans); font-size: 0.88rem; text-align: right; border-radius: 4px;
+  color: var(--text-primary); font-weight: 500;
+}
+.editorial-table input[type="number"]:hover { border-color: var(--border-chip); background: var(--bg-card-subtle); }
+.editorial-table input[type="number"]:focus { outline: none; border-color: var(--text-primary); background: #FFFFFF; }
+
+/* ── Inspector Card ──────────────────────────────────────── */
+.inspector-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+.inspector-section { display: flex; flex-direction: column; gap: 8px; }
+.inspector-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+.chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; background: var(--bg-chip); border: 1px solid var(--border-chip);
+  border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; font-weight: 500; color: var(--text-primary);
+  cursor: pointer; transition: all 0.15s ease; user-select: none; font-family: var(--font-sans);
+}
+.chip:hover { border-color: var(--text-muted); }
+.chip.active { background: #FFFFFF; border-color: var(--text-primary); font-weight: 600; }
+.chip-highlight { background: var(--bg-chip-highlight); border-color: var(--border-chip-highlight); color: var(--text-primary); }
+.chip-list { display: flex; flex-direction: column; gap: 6px; }
+.chip-list-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-chip); border: 1px solid var(--border-chip); border-radius: 6px; padding: 6px 12px; font-size: 0.84rem; color: var(--text-primary); }
+.chip-list-item span:first-child { font-weight: 600; }
+.chip-list-item span:last-child { color: var(--text-secondary); }
+
+/* ── Metrics Strip ───────────────────────────────────────── */
+.metrics-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.metric-box { background: var(--bg-card-subtle); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; }
+.metric-box-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+.metric-box-val { font-size: 1.45rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+.metric-box-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Chart Container ─────────────────────────────────────── */
+.chart-box { position: relative; width: 100%; height: 320px; margin-top: 12px; }
+
+/* ================================================================
+   EXCEL-LIKE WORKSHEET TAB BAR (Bottom of Pricing Engine)
+   This is the key differentiator — feels like actual Excel
+   ================================================================ */
+
+.worksheet-container {
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #FFFFFF;
+  margin-bottom: 24px;
+}
+
+.worksheet-tab-bar {
+  display: flex;
+  gap: 0;
+  background: #EFECE3;
+  border-top: 1px solid var(--border-card);
+  padding: 0 8px;
+  overflow-x: auto;
+}
+
+.ws-tab {
+  padding: 8px 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-top: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  position: relative;
+}
+
+.ws-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.5);
+}
+
+.ws-tab.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  background: #FFFFFF;
+  border-top-color: var(--accent-navy);
+  margin-top: -1px;
+  padding-top: 9px;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Worksheet content areas */
+.worksheet-body {
+  padding: 20px;
+  min-height: 300px;
+}
+
+.ws-sheet { display: none; }
+.ws-sheet.active { display: block; }
+
+/* ── Compact table for Excel sheets ──────────────────────── */
+.ws-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.ws-table th {
+  background: var(--bg-card-subtle);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-card);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ws-table th.num-col,
+.ws-table td.num-col {
+  text-align: right;
+}
+
+.ws-table td {
+  padding: 9px 14px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.ws-table td.label-cell {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+}
+
+.ws-table tr.total-row td {
+  background: var(--bg-card-subtle);
+  font-weight: 700;
+  border-top: 2px solid var(--border-card);
+}
+
+.ws-table tr.subtotal-row td {
+  background: #FDFCFA;
+  font-weight: 600;
+  border-top: 1px solid var(--border-card);
+}
+
+.ws-table input[type="number"] {
+  width: 75px;
+  padding: 3px 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  text-align: right;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+.ws-table input[type="number"]:hover {
+  border-color: var(--border-chip);
+  background: #FFFEF9;
+}
+
+.ws-table input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent-navy);
+  background: #FFFFFF;
+}
+
+/* Cell formula reference style */
+.ws-table td.formula-cell {
+  color: var(--accent-navy);
+  font-style: italic;
+}
+
+/* Row header column */
+.ws-table td.row-header {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  background: var(--bg-card-subtle);
+  min-width: 120px;
+}
+
+/* Section divider in worksheet */
+.ws-section-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 20px 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.ws-section-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+/* ── Rate Card Output Table (Styled differently) ────────── */
+.rate-card-table td {
+  font-weight: 600;
+}
+
+.rate-card-table td.highlight {
+  color: var(--accent-navy);
+  font-weight: 700;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1100px) { .two-column-workspace { grid-template-columns: 1fr; } }
+@media (max-width: 800px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; padding: 24px; }
+}

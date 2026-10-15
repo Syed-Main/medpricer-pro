@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Medical Book — Group Health Pricing Model</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ── Left Sidebar (ShareWillow Aesthetic) ───────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <!-- Sleek geometric brand mark -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-name">Sample Medical Book</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-link active" data-tab="module-overview">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>Portfolio Overview</span>
+        </a>
+        <a class="nav-link" data-tab="module-engine">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+          <span>Pricing Engine</span>
+        </a>
+        <a class="nav-link" data-tab="module-recommendations">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Underwriting Insights</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="user-team">Private Medical Insurance</div>
+        <div class="user-name-row">
+          <span>Syed Abdullah</span>
+          <svg viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Workspace ────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- Breadcrumb / Back Link -->
+      <a class="back-link" id="resetToOverviewBtn">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Portfolio Summary</span>
+      </a>
+
+      <!-- Page Title & Primary Actions Row -->
+      <div class="page-title-row">
+        <div class="title-left">
+          <h1 class="page-title">Sample Medical Book — Group Health Pricing Model</h1>
+          <span class="badge-draft">UY 2024 / FY 2025</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn-link" id="resetGlobalBtn">Reset Assumptions</button>
+          <button class="btn-pill" id="exportGlobalBtn">Export Rate Card</button>
+        </div>
+      </div>
+
+      <!-- Clean Serif Underline Tabs (ShareWillow style) -->
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-target="module-overview">Portfolio Overview</button>
+        <button class="tab-btn" data-target="module-engine">Pricing Engine (Worksheets)</button>
+        <button class="tab-btn" data-target="module-recommendations">Underwriting Insights & Actions</button>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- TAB 1: PORTFOLIO OVERVIEW                              -->
+      <!-- ====================================================== -->
+      <section id="module-overview" class="module-view active">
+        <!-- 4-metric strip -->
+        <div class="metrics-strip">
+          <div class="metric-box">
+            <div class="metric-box-label">Gross Written Premium</div>
+            <div class="metric-box-val" id="metricGWP">$0.0M</div>
+            <div class="metric-box-sub">UY 2024 annualized book</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-box-label">Net Earned Premium</div>
+            <div class="metric-box-val" id="metricEarnedPrem">$0.0M</div>
+            <div class="metric-box-sub">Prospective 12-month run</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-box-label">Incurred Loss Ratio</div>
+            <div class="metric-box-val" id="metricLossRatio">0.0%</div>
+            <div class="metric-box-sub">Target: 65.0% break-even</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-box-label">Combined Operating Ratio</div>
+            <div class="metric-box-val" id="metricCombinedRatio">0.0%</div>
+            <div class="metric-box-sub">Includes 18.2% exp + 8.0% comm</div>
+          </div>
+        </div>
+
+        <div class="two-column-workspace">
+          <!-- Left Column: Loss Ratio Trend & Composition -->
+          <div class="workspace-main">
+            <!-- 24-Month Incurred Loss Ratio Trend -->
+            <div class="editorial-card">
+              <div class="editorial-card-header">
+                <div>
+                  <h3 class="card-heading">24-Month Incurred Loss Ratio Trend</h3>
+                  <div class="card-caption">Monthly development against the 65.0% target corridor (Jan 2023 – Dec 2024)</div>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="lrTrendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Plan Tier Portfolio Mix -->
+            <div class="editorial-card">
+              <div class="editorial-card-header">
+                <div>
+                  <h3 class="card-heading">Portfolio Composition by Plan Tier</h3>
+                  <div class="card-caption">Lives, premium volume, incurred claims, and empirical loss ratios</div>
+                </div>
+              </div>
+              <div class="editorial-table-container">
+                <table class="editorial-table">
+                  <thead>
+                    <tr>
+                      <th>Plan Tier</th>
+                      <th class="num-col">Covered Lives</th>
+                      <th class="num-col">GWP ($)</th>
+                      <th class="num-col">Incurred Claims ($)</th>
+                      <th class="num-col">Loss Ratio</th>
+                      <th class="num-col">Premium Share</th>
+                    </tr>
+                  </thead>
+                  <tbody id="planMixBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Age Band Performance -->
+            <div class="editorial-card">
+              <div class="editorial-card-header">
+                <div>
+                  <h3 class="card-heading">Claims Performance by Age Band</h3>
+                  <div class="card-caption">Identifying age-specific underwriting deficits and claims frequency</div>
+                </div>
+              </div>
+              <div class="editorial-table-container">
+                <table class="editorial-table">
+                  <thead>
+                    <tr>
+                      <th>Age Band</th>
+                      <th class="num-col">Covered Lives</th>
+                      <th class="num-col">GWP ($)</th>
+                      <th class="num-col">Incurred Claims ($)</th>
+                      <th class="num-col">Loss Ratio</th>
+                      <th class="num-col">Claims PMPM ($)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ageBandBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Pricing Adequacy & Actuarial Summary -->
+          <aside class="workspace-inspector">
+            <div class="inspector-card">
+              <div class="inspector-section">
+                <div class="inspector-label">Pricing Adequacy Summary</div>
+                <div id="adequacySummary"></div>
+              </div>
+
+              <div class="inspector-section">
+                <div class="inspector-label">Key Profitability Drivers</div>
+                <div class="chip-list">
+                  <div class="chip-list-item">
+                    <span>Medical Inflation Trend</span>
+                    <span style="color: var(--accent-terracotta); font-weight: 600;">+7.8% p.a.</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Platinum Tier Deficit</span>
+                    <span style="color: var(--accent-terracotta); font-weight: 600;">78.9% LR</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Senior Band (60-64) Deficit</span>
+                    <span style="color: var(--accent-terracotta); font-weight: 600;">85.2% LR</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Full Credibility Z-Score</span>
+                    <span>Z = 0.82 (High)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="inspector-section">
+                <div class="inspector-label">Target Rate Action</div>
+                <div style="background: var(--bg-chip-highlight); border: 1px solid var(--border-chip-highlight); border-radius: 8px; padding: 14px; font-size: 0.85rem; line-height: 1.5;">
+                  <strong>Actuarial Indication:</strong> Prospective rate review requires an average increase of <strong>+8.9%</strong> to return book loss ratio to the 65.0% target and achieve 5.0% net underwriting margin.
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- TAB 2: PRICING ENGINE (EXCEL-LIKE WORKBOOK)            -->
+      <!-- ====================================================== -->
+      <section id="module-engine" class="module-view">
+        <div class="full-width-workspace">
+          
+          <div class="worksheet-container">
+            <!-- Worksheet Body -->
+            <div class="worksheet-body">
+              
+              <!-- ── Sheet 1: Claims Experience ────────────────── -->
+              <div id="claims-exp" class="ws-sheet active">
+                <div class="ws-section-label">1. Claims Experience Workpaper (UY 2022 – UY 2024)</div>
+                <div class="ws-section-note">
+                  Triangulated claims experience by underwriting year and age band. Frequency represents claims per 1,000 member-months. Severity is average claim cost. Pure Premium = Incurred Claims / Member Months.
+                </div>
+                <div class="editorial-table-container">
+                  <table class="ws-table">
+                    <thead>
+                      <tr>
+                        <th>Age Band</th>
+                        <th class="num-col">Member Months</th>
+                        <th class="num-col">Incurred Claims</th>
+                        <th class="num-col">Claim Count</th>
+                        <th class="num-col">Frequency (/1k MM)</th>
+                        <th class="num-col">Severity ($)</th>
+                        <th class="num-col">Pure Premium (PMPM)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="claimsExpBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- ── Sheet 2: Trend & Development ──────────────── -->
+              <div id="trend-dev" class="ws-sheet">
+                <div class="ws-section-label">2. Actuarial Trend & Development Assumptions</div>
+                <div class="ws-section-note">
+                  Interactive assumptions for prospective rating. Adjust annual medical trend or credibility weighting to see live recalculation across the rate build and final rate card.
+                </div>
+
+                <div class="editorial-card" style="margin-bottom: 20px; background: var(--bg-card-subtle);">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; align-items: center;">
+                    <div>
+                      <div class="inspector-label" style="margin-bottom: 6px;">Annual Claims Trend (%)</div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="number" id="trendRateInput" value="7.8" step="0.1" min="0" max="25"
+                               style="font-family: var(--font-mono); font-size: 1rem; width: 80px; padding: 6px; border: 1px solid var(--border-card); border-radius: 4px;"
+                               onchange="PricingEngine.updateTrend(this.value)" />
+                        <span style="font-weight: 600;">% p.a.</span>
+                      </div>
+                      <div class="card-caption" style="margin-top: 4px;">Medical inflation + utilization growth</div>
+                    </div>
+
+                    <div>
+                      <div class="inspector-label" style="margin-bottom: 6px;">Trend Period & Factor</div>
+                      <div id="trendFactorComputed" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: var(--accent-navy);">
+                        1.120x (over 1.5 years)
+                      </div>
+                      <div class="card-caption" style="margin-top: 4px;">Midpoint experience to midpoint prospective</div>
+                    </div>
+
+                    <div>
+                      <div class="inspector-label" style="margin-bottom: 6px;">Credibility Weight (Z)</div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="number" id="credibilityInput" value="82" step="1" min="0" max="100"
+                               style="font-family: var(--font-mono); font-size: 1rem; width: 80px; padding: 6px; border: 1px solid var(--border-card); border-radius: 4px;"
+                               onchange="PricingEngine.updateCredibility(this.value)" />
+                        <span style="font-weight: 600;">% Book / % Manual</span>
+                      </div>
+                      <div class="card-caption" style="margin-top: 4px;">Classical credibility based on 10,000+ life years</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                  <div>
+                    <div class="ws-section-label" style="font-size: 0.85rem;">IBNR Claims Development by Lag Month</div>
+                    <div class="editorial-table-container">
+                      <table class="ws-table">
+                        <thead>
+                          <tr>
+                            <th>Lag Period</th>
+                            <th class="num-col">Completion %</th>
+                            <th class="num-col">Gross-up Factor</th>
+                          </tr>
+                        </thead>
+                        <tbody id="devFactorsBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="ws-section-label" style="font-size: 0.85rem;">Seasonal Utilization Multipliers</div>
+                    <div class="editorial-table-container">
+                      <table class="ws-table">
+                        <thead>
+                          <tr>
+                            <th>Quarter</th>
+                            <th class="num-col">Index</th>
+                            <th>Underlying Driver</th>
+                          </tr>
+                        </thead>
+                        <tbody id="seasonalBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 14px 18px; background: var(--bg-card-subtle); border: 1px solid var(--border-card); border-radius: 8px; font-size: 0.84rem;">
+                  <strong>Large Claims Pooling Threshold:</strong> Claims capped at <strong>$50,000 per claimant</strong>. Non-proportional reinsurance pool charge is fixed at <strong>4.2%</strong> of ultimate claims.
+                </div>
+              </div>
+
+              <!-- ── Sheet 3: Rate Build & Loadings ────────────── -->
+              <div id="rate-build" class="ws-sheet">
+                <div class="ws-section-label">3. Actuarial Pure Premium to Gross Technical Rate Build</div>
+                <div class="ws-section-note">
+                  Historical experience pure premium is trended forward, credibility blended with manual rates, and loaded for operational expenses, broker commissions, and profit margin.
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+                  <div>
+                    <div class="ws-section-label" style="font-size: 0.85rem;">Indicated Rate Build by Age Band ($ PMPM)</div>
+                    <div class="editorial-table-container">
+                      <table class="ws-table">
+                        <thead>
+                          <tr>
+                            <th>Age Band</th>
+                            <th class="num-col">Raw PP</th>
+                            <th class="num-col">Trend</th>
+                            <th class="num-col">Trended PP</th>
+                            <th class="num-col">Credibility</th>
+                            <th class="num-col">Blended PP</th>
+                            <th class="num-col">Total Load</th>
+                            <th class="num-col">Indicated PMPM</th>
+                          </tr>
+                        </thead>
+                        <tbody id="rateBuildBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="ws-section-label" style="font-size: 0.85rem;">Expense & Profit Loadings (Editable)</div>
+                    <div class="editorial-table-container">
+                      <table class="ws-table">
+                        <thead>
+                          <tr>
+                            <th>Cost / Margin Component</th>
+                            <th class="num-col">Percentage</th>
+                          </tr>
+                        </thead>
+                        <tbody id="loadingsBody"></tbody>
+                      </table>
+                    </div>
+                    <div class="ws-section-note" style="margin-top: 10px;">
+                      * Edit numbers above to immediately observe their impact on required technical rates.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Sheet 4: Final Rate Card ──────────────────── -->
+              <div id="rate-card" class="ws-sheet">
+                <div class="ws-section-label">4. Final Group Health Rate Matrix (Per Member Per Month)</div>
+                <div class="ws-section-note">
+                  Fully loaded technical rates by age band and plan tier. Annual Gold benchmark provides standard corporate quote comparison basis.
+                </div>
+
+                <div class="editorial-table-container">
+                  <table class="ws-table rate-card-table">
+                    <thead>
+                      <tr>
+                        <th>Age Band</th>
+                        <th class="num-col">Bronze (Base)</th>
+                        <th class="num-col">Silver (1.35x)</th>
+                        <th class="num-col">Gold (1.72x)</th>
+                        <th class="num-col">Platinum (2.15x)</th>
+                        <th class="num-col">Annual Gold Equiv.</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rateCardBody"></tbody>
+                  </table>
+                </div>
+
+                <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                  <div style="border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; background: var(--bg-card-subtle);">
+                    <div class="inspector-label">Bronze Plan Spec</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; margin: 4px 0;">Relativity: 1.00x</div>
+                    <div class="card-caption">Deductible: $2,500 | Co-pay: 30%</div>
+                  </div>
+                  <div style="border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; background: var(--bg-card-subtle);">
+                    <div class="inspector-label">Silver Plan Spec</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; margin: 4px 0;">Relativity: 1.35x</div>
+                    <div class="card-caption">Deductible: $1,000 | Co-pay: 20%</div>
+                  </div>
+                  <div style="border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; background: var(--bg-card-subtle);">
+                    <div class="inspector-label">Gold Plan Spec</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; margin: 4px 0;">Relativity: 1.72x</div>
+                    <div class="card-caption">Deductible: $500 | Co-pay: 10%</div>
+                  </div>
+                  <div style="border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; background: var(--bg-card-subtle);">
+                    <div class="inspector-label">Platinum Plan Spec</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; margin: 4px 0;">Relativity: 2.15x</div>
+                    <div class="card-caption">Deductible: $0 | Comprehensive</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── Excel-like Worksheet Bottom Tab Strip ──────── -->
+            <div class="worksheet-tab-bar">
+              <button class="ws-tab active" data-sheet="claims-exp">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg>
+                1. Claims Experience (UY22-24)
+              </button>
+              <button class="ws-tab" data-sheet="trend-dev">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                2. Trend & Development
+              </button>
+              <button class="ws-tab" data-sheet="rate-build">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                3. Rate Build & Loadings
+              </button>
+              <button class="ws-tab" data-sheet="rate-card">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                4. Final Rate Card (PMPM)
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- TAB 3: UNDERWRITING INSIGHTS & ACTIONS                 -->
+      <!-- ====================================================== -->
+      <section id="module-recommendations" class="module-view">
+        <div class="two-column-workspace">
+          
+          <div class="workspace-main">
+            <!-- Strategic Actuarial Memo -->
+            <div class="editorial-card">
+              <div class="editorial-card-header">
+                <div>
+                  <h3 class="card-heading">Actuarial Memorandum: Portfolio Performance & Remediation</h3>
+                  <div class="card-caption">Prepared for the Pricing Committee & Chief Underwriting Officer</div>
+                </div>
+              </div>
+
+              <!-- Executive Summary -->
+              <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 24px;">
+                <p style="margin-bottom: 14px;">
+                  <strong>Context:</strong> A rigorous claims experience and rate adequacy analysis was performed across the <strong>Sample Medical Book</strong> (representing $42.5M GWP, 15,000 covered lives, UY 2022–2024). The book currently operates at a <strong>71.6% incurred loss ratio</strong> and a <strong>98.0% combined operating ratio</strong>, leaving underwriting margins compressed well below the target 5.0% profitability threshold.
+                </p>
+                <p>
+                  To restore the portfolio to a sustainable <strong>65.0% break-even loss ratio</strong> for FY 2025 renewals, an overall portfolio rate increase of <strong>+8.9%</strong> is indicated, alongside targeted structural adjustments to benefit tiers and age rating curves.
+                </p>
+              </div>
+
+              <!-- Key Issue Breakdown -->
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Issue 1 -->
+                <div style="border-left: 3px solid var(--accent-terracotta); padding-left: 16px;">
+                  <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                    1. Cross-Subsidization & Structural Underpricing in Senior Cohorts (Ages 50–64)
+                  </h4>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                    The 50–59 cohort is running at <strong>78.0% LR</strong> and the 60–64 cohort is at <strong>85.2% LR</strong>, driven by a 14.2% surge in inpatient surgical frequency and chronic oncology therapies. The existing age relativities (2.45x and 3.10x) understate the actual empirical severity gradient.
+                  </p>
+                  <div style="margin-top: 8px; font-size: 0.84rem; font-weight: 600; color: var(--accent-navy);">
+                    Recommendation: Steepens age relativities to 2.65x (50–59) and 3.40x (60–64). Restricts unrated family add-ons for dependents above age 60.
+                  </div>
+                </div>
+
+                <!-- Issue 2 -->
+                <div style="border-left: 3px solid var(--accent-terracotta); padding-left: 16px;">
+                  <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                    2. Platinum Tier Moral Hazard & First-Dollar Utilization
+                  </h4>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                    The zero-deductible Platinum tier produces a <strong>78.9% LR</strong> ($4.18M claims on $5.30M premium). Outpatient consultation frequency is 2.8x higher than the Bronze baseline, confirming moral hazard under first-dollar coverage.
+                  </p>
+                  <div style="margin-top: 8px; font-size: 0.84rem; font-weight: 600; color: var(--accent-navy);">
+                    Recommendation: Introduce a mandatory $250 outpatient co-pay or 10% prescription co-insurance on Platinum renewals. Shift corporate quote default to Gold tier.
+                  </div>
+                </div>
+
+                <!-- Issue 3 -->
+                <div style="border-left: 3px solid var(--accent-terracotta); padding-left: 16px;">
+                  <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                    3. Medical Trend Acceleration Exceeding Pricing Assumptions
+                  </h4>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                    Observed medical inflation across network hospital contracts ran at <strong>7.8% p.a.</strong> over the past 18 months, compared to the 5.0% trend baked into prior underwriting tariffs. Compounded over the 1.5-year pricing horizon, this creates a 4.1% pricing shortfall before any utilization changes.
+                  </p>
+                  <div style="margin-top: 8px; font-size: 0.84rem; font-weight: 600; color: var(--accent-navy);">
+                    Recommendation: Lock in a 7.8% trend factor into prospective rate cards and introduce semi-annual hospital tariff indexing in large corporate accounts.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Financial Impact Summary Table -->
+            <div class="editorial-card">
+              <div class="editorial-card-header">
+                <div>
+                  <h3 class="card-heading">Quantified Financial Impact of Proposed Remediation</h3>
+                  <div class="card-caption">Estimated 12-month run-rate impact on portfolio profitability ($ in thousands)</div>
+                </div>
+              </div>
+              <div class="editorial-table-container">
+                <table class="editorial-table">
+                  <thead>
+                    <tr>
+                      <th>Remediation Measure</th>
+                      <th class="num-col">Target Sub-Portfolio</th>
+                      <th class="num-col">Gross Premium Impact</th>
+                      <th class="num-col">Claims Reduction</th>
+                      <th class="num-col">Net Margin Impact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Overall Base Rate Increase (+8.9%)</strong></td>
+                      <td class="num-col">Entire Book (15k lives)</td>
+                      <td class="num-col" style="font-family: var(--font-mono); color: var(--accent-green); font-weight: 600;">+$3,400k</td>
+                      <td class="num-col" style="font-family: var(--font-mono);">$0k</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700;">+$2,510k</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Senior Band Curve Realignment</strong></td>
+                      <td class="num-col">Ages 50–64 (4,100 lives)</td>
+                      <td class="num-col" style="font-family: var(--font-mono); color: var(--accent-green); font-weight: 600;">+$1,120k</td>
+                      <td class="num-col" style="font-family: var(--font-mono);">$0k</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700;">+$825k</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Platinum Tier Co-Pay Introduction</strong></td>
+                      <td class="num-col">Platinum Tier (900 lives)</td>
+                      <td class="num-col" style="font-family: var(--font-mono);">-$150k (tier drift)</td>
+                      <td class="num-col" style="font-family: var(--font-mono); color: var(--accent-green); font-weight: 600;">-$420k (utilization drop)</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700;">+$270k</td>
+                    </tr>
+                    <tr class="total-row">
+                      <td><strong>Total Projected Commercial Improvement</strong></td>
+                      <td class="num-col">Full Portfolio</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">+$4,370k</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">-$420k</td>
+                      <td class="num-col" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-navy); font-size: 1rem;">+$3,605k</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Implementation & Monitoring Roadmap -->
+          <aside class="workspace-inspector">
+            <div class="inspector-card">
+              <div class="inspector-section">
+                <div class="inspector-label">Implementation Timeline</div>
+                <div class="chip-list">
+                  <div class="chip-list-item">
+                    <span>Month 1: Committee Approval</span>
+                    <span>Sign-off on indicated rates</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Month 2: Broker Distribution</span>
+                    <span>Release UY25 Rate Cards</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Month 3-6: Renewal Tracking</span>
+                    <span>Monitor retention & loss ratios</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="inspector-section">
+                <div class="inspector-label">Target Portfolio Metrics (Post-Action)</div>
+                <div class="chip-list">
+                  <div class="chip-list-item">
+                    <span>Target Incurred Loss Ratio</span>
+                    <span style="color: var(--accent-green); font-weight: 700;">64.2%</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Projected Combined Ratio</span>
+                    <span style="color: var(--accent-green); font-weight: 700;">90.4%</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Expected Underwriting Margin</span>
+                    <span style="color: var(--accent-green); font-weight: 700;">+9.6%</span>
+                  </div>
+                  <div class="chip-list-item">
+                    <span>Target Quote Conversion Rate</span>
+                    <span>42.0%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="inspector-section">
+                <div class="inspector-label">Actuarial Governance</div>
+                <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; font-size: 0.84rem; line-height: 1.5;">
+                  <strong>Sign-off Standard:</strong> Consistent with Actuarial Standards of Practice (ASOP No. 8 – Regulatory Filings for Health Benefits & ASOP No. 25 – Credibility Procedures).
+                </div>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data/pricing-data.js"></script>
+  <script src="js/overview.js"></script>
+  <script src="js/pricing-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
