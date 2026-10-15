@@ -19,9 +19,7 @@ const PRICING_DATA = {
     gwp: 42500,          // Gross Written Premium ($000s)
     earnedPremium: 38200,
     incurredClaims: 27340,
-    expenseRatio: 0.182,
-    commissionRate: 0.08,
-    profitTarget: 0.05,
+    // Expense/commission/profit are taken from rateBuild.loadings (single source of truth).
 
     // Monthly loss ratio trend (24 months: Jan-23 → Dec-24)
     lossRatioTrend: {
@@ -42,10 +40,10 @@ const PRICING_DATA = {
 
     // Portfolio composition by plan tier
     planMix: [
-      { tier: "Bronze",   lives: 4200, premium: 8400,  claims: 5460,  lossRatio: 0.65 },
-      { tier: "Silver",   lives: 6800, premium: 15640, claims: 11230, lossRatio: 0.718 },
-      { tier: "Gold",     lives: 3100, premium: 11160, claims: 8040,  lossRatio: 0.720 },
-      { tier: "Platinum", lives: 900,  premium: 5300,  claims: 4180,  lossRatio: 0.789 }
+      { tier: "Bronze", lives: 4200, premium: 7923, claims: 5150, lossRatio: 0.650 },
+      { tier: "Silver", lives: 6800, premium: 14752, claims: 10664, lossRatio: 0.723 },
+      { tier: "Gold", lives: 3100, premium: 10526, claims: 7583, lossRatio: 0.720 },
+      { tier: "Platinum", lives: 900, premium: 4999, claims: 3943, lossRatio: 0.789 }
     ],
 
     // Loss ratio by age band
@@ -57,14 +55,7 @@ const PRICING_DATA = {
       { band: "60-64", lives: 1300, premium: 5590, claims: 4762, lr: 0.852 }
     ],
 
-    // Pricing adequacy summary
-    adequacy: {
-      currentAvgRate: 2.68,      // per member per month ($000s annualized)
-      indicatedRate: 2.92,
-      rateChangeNeeded: 0.089,   // +8.9%
-      breakEvenLR: 0.692,
-      ultimateLR: 0.716
-    }
+    // Pricing adequacy is DERIVED in js/model.js (indicated vs current rate) — no hard-coded rate change.
   },
 
   // ── Pricing Engine: Tab 1 — Claims Experience ─────────────
@@ -79,11 +70,14 @@ const PRICING_DATA = {
       "UY 2024": [38400, 49200, 43200, 33600, 15600]
     },
 
-    // Incurred claims ($000s) by age band and UY
+    // Incurred claims ($000s) by age band and UY — REPORTED basis at the valuation date.
+    // UY2024 ties to portfolio.ageBandPerformance. UY2022-23 are SYNTHETIC: back-cast from UY2024
+    // (ultimate basis) at band-level trends of 6.5%-9.2% p.a. so the demo experience is internally coherent.
+    // Replace with real data before relying on any output.
     incurredClaims: {
-      "UY 2022": [2436, 5328, 6144, 7488, 4356],
-      "UY 2023": [2664, 5850, 6936, 7980, 5040],
-      "UY 2024": [2816, 5978, 6998, 8232, 4901]
+      "UY 2022": [2362, 4632, 5412, 5666, 3548],
+      "UY 2023": [2602, 5224, 6199, 6410, 4226],
+      "UY 2024": [2816, 5597, 6739, 7426, 4762]
     },
 
     // Claim count (frequency data)
@@ -97,8 +91,10 @@ const PRICING_DATA = {
   // ── Pricing Engine: Tab 2 — Trend & Development ───────────
   trendFactors: {
     // Annual claims trend (medical inflation + utilization)
-    annualClaimsTrend: 0.078,    // 7.8% p.a.
-    trendPeriod: 1.5,            // midpoint of experience to midpoint of rating period (years)
+    annualClaimsTrend: 0.078,    // ASSUMPTION (7.8% p.a.) — compare with observed mix-adjusted trend shown in the Trend sheet
+    // Years from each UY midpoint to the rating-period midpoint (1 Jan–31 Dec 2025 → 1 Jul 2025)
+    trendYears: { "UY 2022": 3, "UY 2023": 2, "UY 2024": 1 },
+    valuationDate: { year: 2025, month: 3 },   // claims valued at 31 Mar 2025
 
     // IBNR development factors by lag month
     developmentFactors: [
@@ -113,9 +109,10 @@ const PRICING_DATA = {
     largeClaimsThreshold: 50,    // $50k per claimant
     largeClaimsLoadPct: 0.042,   // 4.2% of total claims are pooled / reinsured
 
-    // Credibility parameters
-    credibilityZ: 0.82,          // full credibility at Z=0.82
-    manualRateSource: "Industry tables (WHO actuarial benchmarks)",
+    // Credibility: limited-fluctuation. Full-credibility standard = 1,082 x (1 + CV^2) claims; Z = sqrt(n / standard).
+    // Manual / prior basis = current premium x permissible LR, trended (no external benchmark in this demo).
+    severityCV: 2.5,
+    fullCredBase: 1082,
 
     // Seasonal adjustment index (by quarter)
     seasonalIndex: [
@@ -138,14 +135,6 @@ const PRICING_DATA = {
       { item: "Profit & Contingency Margin", pct: 0.050 }
     ],
 
-    // Age relativities (18-29 = 1.00 base)
-    ageRelativities: [
-      { band: "18-29", relativity: 1.00 },
-      { band: "30-39", relativity: 1.42 },
-      { band: "40-49", relativity: 1.88 },
-      { band: "50-59", relativity: 2.45 },
-      { band: "60-64", relativity: 3.10 }
-    ],
 
     // Plan tier benefit relativities (Bronze = 1.00 base)
     planRelativities: [
@@ -156,11 +145,5 @@ const PRICING_DATA = {
     ]
   },
 
-  // ── Pricing Engine: Tab 4 — Final Rate Card ───────────────
-  // (Computed dynamically from above inputs)
-  rateCard: {
-    effectiveDate: "01 January 2025",
-    ratingBasis: "Per Member Per Month (PMPM)",
-    basePMPM: 186.40   // Base PMPM for 18-29, Bronze
-  }
+  // Rate card is computed in js/model.js from the inputs above.
 };

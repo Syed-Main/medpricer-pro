@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     PricingEngine.init();
   }
 
+  if (typeof Currency !== 'undefined') Currency.init();
+  if (typeof Insights !== 'undefined') Insights.render();
   setupTopLevelTabs();
   setupSidebarNav();
   setupHeaderActions();
@@ -75,15 +77,12 @@ function setupHeaderActions() {
   const resetBtn = document.getElementById('resetGlobalBtn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (typeof PricingEngine !== 'undefined') {
-        PricingEngine.updateTrend(7.8);
-        PricingEngine.updateCredibility(82);
-        PricingEngine.renderAllSheets();
-      }
-      if (typeof OverviewModule !== 'undefined') {
-        OverviewModule.init();
-      }
-      alert('Pricing parameters reset to base actuarial assumptions.');
+      Model.reset();
+      PricingEngine.syncInputs();
+      PricingEngine.renderAllSheets();
+      OverviewModule.init();
+      Insights.render();
+      alert('Trend, credibility CV and loadings reset to base assumptions.');
     });
   }
 

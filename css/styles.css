@@ -357,3 +357,9 @@ body { font-family: var(--font-sans); background: var(--bg-canvas); color: var(-
   .sidebar { display: none; }
   .main-content { margin-left: 0; padding: 24px; }
 }
+
+/* Currency switcher */
+.ccy-box { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted, #87857E); margin-right: 12px; }
+.ccy-box select, .ccy-box input { font: inherit; padding: 4px 6px; border: 1px solid var(--border-card, #ECE7DE); border-radius: 6px; background: #fff; color: inherit; }
+.ccy-box input { width: 68px; font-family: var(--font-mono, monospace); }
+.ccy-box input:disabled { opacity: 0.45; }

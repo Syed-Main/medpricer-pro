@@ -16,16 +16,14 @@ const OverviewModule = (function () {
   }
 
   function renderMetrics() {
-    const p = PRICING_DATA.portfolio;
-    const lr = (p.incurredClaims / p.earnedPremium * 100).toFixed(1);
-    const cr = ((p.incurredClaims / p.earnedPremium) + p.expenseRatio + p.commissionRate) * 100;
-
-    document.getElementById('metricGWP').textContent = `$${(p.gwp / 1000).toFixed(1)}M`;
-    document.getElementById('metricEarnedPrem').textContent = `$${(p.earnedPremium / 1000).toFixed(1)}M`;
-    document.getElementById('metricLossRatio').textContent = `${lr}%`;
-    document.getElementById('metricLossRatio').style.color = parseFloat(lr) > 70 ? '#C25E2E' : '#2E7D32';
-    document.getElementById('metricCombinedRatio').textContent = `${cr.toFixed(1)}%`;
-    document.getElementById('metricCombinedRatio').style.color = cr > 100 ? '#C25E2E' : '#2E7D32';
+    const m = Model.compute(), p = PRICING_DATA.portfolio, pct = v => (v * 100).toFixed(1) + '%';
+    const set = (id, t, col) => { const e = document.getElementById(id); if (!e) return; e.textContent = t; if (col) e.style.color = col; };
+    set('metricGWP', Currency.m(p.gwp));
+    set('metricEarnedPrem', Currency.m(p.earnedPremium));
+    set('metricLossRatio', pct(m.ultimateLR), m.ultimateLR > m.permLR ? '#C25E2E' : '#2E7D32');
+    set('metricLRSub', `Reported ${pct(m.reportedLR)} + IBNR · permissible ${pct(m.permLR)}`);
+    set('metricCombinedRatio', pct(m.combined), m.combined > 1 ? '#C25E2E' : '#2E7D32');
+    set('metricCRSub', `Ultimate LR + ${pct(m.loadTot - m.profit)} loadings (ex-profit)`);
   }
 
   function renderLossRatioChart() {
@@ -34,7 +32,8 @@ const OverviewModule = (function () {
     if (lrChart) lrChart.destroy();
 
     const trend = PRICING_DATA.portfolio.lossRatioTrend;
-    const targetLine = trend.labels.map(() => trend.target);
+    const permLR = Model.compute().permLR;
+    const targetLine = trend.labels.map(() => permLR);
 
     lrChart = new Chart(ctx, {
       type: 'line',
@@ -53,7 +52,7 @@ const OverviewModule = (function () {
             fill: true
           },
           {
-            label: 'Target Loss Ratio (65%)',
+            label: `Permissible LR (${(permLR * 100).toFixed(1)}%)`,
             data: targetLine.map(v => v * 100),
             borderColor: '#C25E2E',
             borderWidth: 1.5,
@@ -115,8 +114,8 @@ const OverviewModule = (function () {
         <tr>
           <td><strong>${p.tier}</strong></td>
           <td class="num-col">${p.lives.toLocaleString()}</td>
-          <td class="num-col" style="font-family: var(--font-mono);">$${(p.premium / 1000).toFixed(1)}M</td>
-          <td class="num-col" style="font-family: var(--font-mono);">$${(p.claims / 1000).toFixed(1)}M</td>
+          <td class="num-col" style="font-family: var(--font-mono);">${Currency.m(p.premium)}</td>
+          <td class="num-col" style="font-family: var(--font-mono);">${Currency.m(p.claims)}</td>
           <td class="num-col" style="font-family: var(--font-mono); color: ${lrColor}; font-weight: 600;">${(p.lossRatio * 100).toFixed(1)}%</td>
           <td class="num-col">${((p.premium / totalPrem) * 100).toFixed(0)}%</td>
         </tr>`;
@@ -126,8 +125,8 @@ const OverviewModule = (function () {
       <tr class="total-row">
         <td>Total Portfolio</td>
         <td class="num-col">${totalLives.toLocaleString()}</td>
-        <td class="num-col" style="font-family: var(--font-mono);">$${(totalPrem / 1000).toFixed(1)}M</td>
-        <td class="num-col" style="font-family: var(--font-mono);">$${(totalClaims / 1000).toFixed(1)}M</td>
+        <td class="num-col" style="font-family: var(--font-mono);">${Currency.m(totalPrem)}</td>
+        <td class="num-col" style="font-family: var(--font-mono);">${Currency.m(totalClaims)}</td>
         <td class="num-col" style="font-family: var(--font-mono); font-weight: 700;">${(totalClaims / totalPrem * 100).toFixed(1)}%</td>
         <td class="num-col">100%</td>
       </tr>`;
@@ -149,10 +148,10 @@ const OverviewModule = (function () {
         <tr>
           <td><strong>${b.band}</strong></td>
           <td class="num-col">${b.lives.toLocaleString()}</td>
-          <td class="num-col" style="font-family: var(--font-mono);">$${(b.premium).toLocaleString()}k</td>
-          <td class="num-col" style="font-family: var(--font-mono);">$${(b.claims).toLocaleString()}k</td>
+          <td class="num-col" style="font-family: var(--font-mono);">${Currency.k(b.premium)}</td>
+          <td class="num-col" style="font-family: var(--font-mono);">${Currency.k(b.claims)}</td>
           <td class="num-col" style="font-family: var(--font-mono); color: ${lrColor}; font-weight: 600;">${(b.lr * 100).toFixed(1)}%</td>
-          <td class="num-col" style="font-family: var(--font-mono);">$${pmpm}</td>
+          <td class="num-col" style="font-family: var(--font-mono);">${Currency.d(pmpm)}</td>
         </tr>`;
     });
 
@@ -160,17 +159,17 @@ const OverviewModule = (function () {
   }
 
   function renderAdequacySummary() {
-    const a = PRICING_DATA.portfolio.adequacy;
-    const el = document.getElementById('adequacySummary');
+    const m = Model.compute(), el = document.getElementById('adequacySummary');
     if (!el) return;
-
+    const pc = v => `${(v * 100).toFixed(1)}%`;
     el.innerHTML = `
       <div class="chip-list">
-        <div class="chip-list-item"><span>Current Average Rate (PMPM)</span><span>$${(a.currentAvgRate * 1000 / 12).toFixed(0)} / month</span></div>
-        <div class="chip-list-item"><span>Indicated Rate (PMPM)</span><span style="color: var(--accent-terracotta); font-weight: 700;">$${(a.indicatedRate * 1000 / 12).toFixed(0)} / month</span></div>
-        <div class="chip-list-item"><span>Rate Increase Needed</span><span style="color: var(--accent-terracotta); font-weight: 700;">+${(a.rateChangeNeeded * 100).toFixed(1)}%</span></div>
-        <div class="chip-list-item"><span>Break-Even Loss Ratio</span><span>${(a.breakEvenLR * 100).toFixed(1)}%</span></div>
-        <div class="chip-list-item"><span>Ultimate Loss Ratio (UY24)</span><span style="color: ${a.ultimateLR > a.breakEvenLR ? '#C25E2E' : '#2E7D32'}; font-weight: 600;">${(a.ultimateLR * 100).toFixed(1)}%</span></div>
+        <div class="chip-list-item"><span>Current Average Rate (PMPM)</span><span>${Currency.d(m.curAvg)} / month</span></div>
+        <div class="chip-list-item"><span>Indicated Rate (PMPM)</span><span style="color: var(--accent-terracotta); font-weight: 700;">${Currency.d(m.indAvg)} / month</span></div>
+        <div class="chip-list-item"><span>Rate Increase Indicated</span><span style="color: var(--accent-terracotta); font-weight: 700;">${m.overallChange >= 0 ? '+' : ''}${pc(m.overallChange)}</span></div>
+        <div class="chip-list-item"><span>Break-Even LR (no profit)</span><span>${pc(m.breakEvenLR)}</span></div>
+        <div class="chip-list-item"><span>Permissible LR (incl. profit)</span><span>${pc(m.permLR)}</span></div>
+        <div class="chip-list-item"><span>Ultimate Loss Ratio (UY24)</span><span style="color: ${m.ultimateLR > m.breakEvenLR ? '#C25E2E' : '#2E7D32'}; font-weight: 600;">${pc(m.ultimateLR)}</span></div>
       </div>`;
   }
 

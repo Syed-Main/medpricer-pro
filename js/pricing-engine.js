@@ -7,12 +7,6 @@
 const PricingEngine = (function () {
   let activeSheet = 'claims-exp';
 
-  // Editable state (cloned from PRICING_DATA for live recalculation)
-  let trendRate = PRICING_DATA.trendFactors.annualClaimsTrend;
-  let trendPeriod = PRICING_DATA.trendFactors.trendPeriod;
-  let credibility = PRICING_DATA.trendFactors.credibilityZ;
-  let loadings = JSON.parse(JSON.stringify(PRICING_DATA.rateBuild.loadings));
-
   function init() {
     setupSheetTabs();
     renderAllSheets();
@@ -67,11 +61,11 @@ const PricingEngine = (function () {
           <tr>
             <td class="label-cell">${band}</td>
             <td class="num-col">${mm.toLocaleString()}</td>
-            <td class="num-col">$${ic.toLocaleString()}k</td>
+            <td class="num-col">${Currency.k(ic)}</td>
             <td class="num-col">${cc.toLocaleString()}</td>
             <td class="num-col">${freq}</td>
-            <td class="num-col">$${severity}</td>
-            <td class="num-col formula-cell">$${purePremium}</td>
+            <td class="num-col">${Currency.d(severity)}</td>
+            <td class="num-col formula-cell">${Currency.d(purePremium, 2)}</td>
           </tr>`;
       });
 
@@ -87,229 +81,97 @@ const PricingEngine = (function () {
         <tr class="subtotal-row">
           <td class="row-header" style="font-weight: 700;">Total ${uy}</td>
           <td class="num-col" style="font-weight: 700;">${totalMM.toLocaleString()}</td>
-          <td class="num-col" style="font-weight: 700;">$${totalIC.toLocaleString()}k</td>
+          <td class="num-col" style="font-weight: 700;">${Currency.k(totalIC)}</td>
           <td class="num-col" style="font-weight: 700;">${totalCC.toLocaleString()}</td>
           <td class="num-col" style="font-weight: 700;">${totalFreq}</td>
-          <td class="num-col" style="font-weight: 700;">$${totalSev}</td>
-          <td class="num-col formula-cell" style="font-weight: 700;">$${totalPP}</td>
+          <td class="num-col" style="font-weight: 700;">${Currency.d(totalSev)}</td>
+          <td class="num-col formula-cell" style="font-weight: 700;">${Currency.d(totalPP, 2)}</td>
         </tr>`;
     });
 
     tbody.innerHTML = html;
   }
 
-  // ── Sheet 2: Trend & Development Factors ──────────────────
+  // ── Sheet 2: Trend & Development Factors ─────────────────
   function renderTrendFactors() {
-    // Development factors table
+    const m = Model.compute(), T = PRICING_DATA.trendFactors;
     const devBody = document.getElementById('devFactorsBody');
-    if (devBody) {
-      let html = '';
-      PRICING_DATA.trendFactors.developmentFactors.forEach(d => {
-        html += `
-          <tr>
-            <td class="label-cell">${d.lag}</td>
-            <td class="num-col">${(d.completionPct * 100).toFixed(0)}%</td>
-            <td class="num-col formula-cell">${d.factor.toFixed(3)}</td>
-          </tr>`;
-      });
-      devBody.innerHTML = html;
-    }
-
-    // Seasonal index table
+    if (devBody) devBody.innerHTML = T.developmentFactors.map(d => `
+      <tr><td class="label-cell">${d.lag}</td><td class="num-col">${(d.completionPct * 100).toFixed(0)}%</td>
+      <td class="num-col formula-cell">${d.factor.toFixed(3)}</td></tr>`).join('');
     const seasonBody = document.getElementById('seasonalBody');
-    if (seasonBody) {
-      let html = '';
-      PRICING_DATA.trendFactors.seasonalIndex.forEach(s => {
-        html += `
-          <tr>
-            <td class="label-cell">${s.quarter}</td>
-            <td class="num-col formula-cell">${s.index.toFixed(2)}</td>
-            <td>${s.note}</td>
-          </tr>`;
-      });
-      seasonBody.innerHTML = html;
-    }
+    if (seasonBody) seasonBody.innerHTML = T.seasonalIndex.map(x => `
+      <tr><td class="label-cell">${x.quarter}</td><td class="num-col formula-cell">${x.index.toFixed(2)}</td><td>${x.note}</td></tr>`).join('');
 
-    // Update trend inspector values
-    const trendEl = document.getElementById('trendRateDisplay');
-    if (trendEl) trendEl.textContent = `${(trendRate * 100).toFixed(1)}% p.a.`;
-
-    const trendFactorEl = document.getElementById('trendFactorComputed');
-    if (trendFactorEl) {
-      const tf = Math.pow(1 + trendRate, trendPeriod);
-      trendFactorEl.textContent = `${tf.toFixed(3)}x (over ${trendPeriod} years)`;
-    }
+    const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+    set('trendFactorComputed', m.years.map(uy => `${uy.replace('UY 20', 'UY')} ${m.tf[uy].toFixed(3)}x`).join(' · '));
+    const obs = m.observedTrend * 100, asm = m.st.trend * 100;
+    set('observedTrend', `${obs.toFixed(1)}% p.a.`);
+    set('observedTrendNote', Math.abs(obs - asm) <= 1.5
+      ? `Within ${Math.abs(obs - asm).toFixed(1)}pt of the ${asm.toFixed(1)}% assumption`
+      : `⚠ ${Math.abs(obs - asm).toFixed(1)}pt away from the ${asm.toFixed(1)}% assumption — justify or revisit`);
+    const o = document.getElementById('observedTrendNote'); if (o) o.style.color = Math.abs(obs - asm) <= 1.5 ? '' : '#C25E2E';
+    set('credStd', `Full-credibility standard: ${Math.round(m.std).toLocaleString()} claims (1,082 × (1+CV²))`);
+    const c24 = m.comp[m.lastUY];
+    set('devAppliedNote', `IBNR: UY24 is ${(c24 * 100).toFixed(1)}% complete at the 31 Mar 2025 valuation (monthly lags mapped to the table above), a ${(1 / c24).toFixed(3)}x gross-up; UY22–23 treated as complete.`);
   }
 
-  // ── Sheet 3: Rate Build (with loadings inline) ────────────
+  // ── Sheet 3: Rate Build (all values from Model) ──────────
   function renderRateBuild() {
-    // Step 1: Compute blended experience pure premium (latest 3 UYs, weighted)
-    const data = PRICING_DATA.claimsExperience;
-    const bands = data.ageBands;
-    const years = Object.keys(data.memberMonths);
-
-    // Weighted average pure premium by age band across all UYs
-    const purePremByBand = bands.map((_, idx) => {
-      let totalIC = 0, totalMM = 0;
-      years.forEach(uy => {
-        totalIC += data.incurredClaims[uy][idx];
-        totalMM += data.memberMonths[uy][idx];
-      });
-      return totalIC / totalMM * 1000; // PMPM in $
-    });
-
-    // Step 2: Apply trend factor
-    const trendFactor = Math.pow(1 + trendRate, trendPeriod);
-    const trendedPP = purePremByBand.map(pp => pp * trendFactor);
-
-    // Step 3: Credibility blend (experience vs manual)
-    // Manual rates = experience rates * 1.05 (slight industry adjustment)
-    const manualPP = trendedPP.map(pp => pp * 1.05);
-    const blendedPP = trendedPP.map((exp, i) => credibility * exp + (1 - credibility) * manualPP[i]);
-
-    // Step 4: Expense and profit loading
-    const totalLoadingPct = loadings.reduce((acc, l) => acc + l.pct, 0);
-    const loadedPP = blendedPP.map(pp => pp / (1 - totalLoadingPct));
-
-    // Render rate build table
+    const m = Model.compute(), pc = v => (v * 100).toFixed(0) + '%';
     const tbody = document.getElementById('rateBuildBody');
     if (tbody) {
-      let html = '';
-      bands.forEach((band, idx) => {
-        html += `
-          <tr>
-            <td class="label-cell">${band}</td>
-            <td class="num-col">$${purePremByBand[idx].toFixed(2)}</td>
-            <td class="num-col formula-cell">${trendFactor.toFixed(3)}x</td>
-            <td class="num-col">$${trendedPP[idx].toFixed(2)}</td>
-            <td class="num-col">${(credibility * 100).toFixed(0)}%</td>
-            <td class="num-col formula-cell">$${blendedPP[idx].toFixed(2)}</td>
-            <td class="num-col">${(totalLoadingPct * 100).toFixed(1)}%</td>
-            <td class="num-col formula-cell" style="font-weight: 700; color: var(--accent-navy);">$${loadedPP[idx].toFixed(2)}</td>
-          </tr>`;
-      });
-
-      // Total weighted row
-      let totalRawPP = 0, totalLoaded = 0, totalMM = 0;
-      bands.forEach((_, idx) => {
-        let mm = 0;
-        years.forEach(uy => { mm += data.memberMonths[uy][idx]; });
-        totalRawPP += purePremByBand[idx] * mm;
-        totalLoaded += loadedPP[idx] * mm;
-        totalMM += mm;
-      });
-      html += `
-        <tr class="total-row">
-          <td class="row-header">Weighted Average</td>
-          <td class="num-col">$${(totalRawPP / totalMM).toFixed(2)}</td>
-          <td class="num-col">${trendFactor.toFixed(3)}x</td>
-          <td class="num-col">$${(totalRawPP / totalMM * trendFactor).toFixed(2)}</td>
-          <td class="num-col">${(credibility * 100).toFixed(0)}%</td>
-          <td class="num-col">—</td>
-          <td class="num-col">${(totalLoadingPct * 100).toFixed(1)}%</td>
-          <td class="num-col formula-cell" style="font-weight: 700; color: var(--accent-navy);">$${(totalLoaded / totalMM).toFixed(2)}</td>
-        </tr>`;
-
+      let html = m.rows.map(r => `
+        <tr><td class="label-cell">${r.band}</td>
+          <td class="num-col">${Currency.d(r.rawPP, 2)}</td>
+          <td class="num-col formula-cell">${r.factor.toFixed(3)}x</td>
+          <td class="num-col">${Currency.d(r.adjPP, 2)}</td>
+          <td class="num-col">${pc(r.Z)}</td>
+          <td class="num-col formula-cell">${Currency.d(r.blendedPP, 2)}</td>
+          <td class="num-col">${(m.loadTot * 100).toFixed(1)}%</td>
+          <td class="num-col formula-cell" style="font-weight: 700; color: var(--accent-navy);">${Currency.d(r.indicated, 2)}</td></tr>`).join('');
+      html += `<tr class="total-row"><td class="row-header">Weighted Average (UY24 mix)</td>
+        <td class="num-col" colspan="6" style="text-align:right; color: var(--text-muted);">Current avg ${Currency.d(m.curAvg, 2)} → rate change ${(m.overallChange >= 0 ? '+' : '') + (m.overallChange * 100).toFixed(1)}%</td>
+        <td class="num-col formula-cell" style="font-weight: 700; color: var(--accent-navy);">${Currency.d(m.indAvg, 2)}</td></tr>`;
       tbody.innerHTML = html;
     }
-
-    // Render loadings breakdown
-    const loadingsBody = document.getElementById('loadingsBody');
-    if (loadingsBody) {
-      let html = '';
-      loadings.forEach((l, idx) => {
-        html += `
-          <tr>
-            <td class="label-cell">${l.item}</td>
-            <td class="num-col">
-              <input type="number" value="${(l.pct * 100).toFixed(1)}" step="0.5" min="0" max="30"
-                     onchange="PricingEngine.updateLoading(${idx}, this.value)" />%
-            </td>
-          </tr>`;
-      });
-      html += `
-        <tr class="total-row">
-          <td class="row-header">Total Expense & Profit Load</td>
-          <td class="num-col" style="font-weight: 700;">${(totalLoadingPct * 100).toFixed(1)}%</td>
-        </tr>
-        <tr>
-          <td class="row-header">Permissible Loss Ratio</td>
-          <td class="num-col formula-cell" style="font-weight: 700;">${((1 - totalLoadingPct) * 100).toFixed(1)}%</td>
-        </tr>`;
-
-      loadingsBody.innerHTML = html;
+    const lb = document.getElementById('loadingsBody');
+    if (lb) {
+      let html = m.st.loadings.map((l, i) => `
+        <tr><td class="label-cell">${l.item}</td><td class="num-col">
+          <input type="number" value="${(l.pct * 100).toFixed(1)}" step="0.5" min="0" max="30" onchange="PricingEngine.updateLoading(${i}, this.value)" />%</td></tr>`).join('');
+      html += `<tr class="total-row"><td class="row-header">Total Expense & Profit Load</td><td class="num-col" style="font-weight: 700;">${(m.loadTot * 100).toFixed(1)}%</td></tr>
+        <tr><td class="row-header">Permissible LR (incl. profit)</td><td class="num-col formula-cell" style="font-weight: 700;">${(m.permLR * 100).toFixed(1)}%</td></tr>
+        <tr><td class="row-header">Break-even LR (ex-profit)</td><td class="num-col formula-cell" style="font-weight: 700;">${(m.breakEvenLR * 100).toFixed(1)}%</td></tr>`;
+      lb.innerHTML = html;
     }
   }
 
-  // ── Sheet 4: Final Rate Card ──────────────────────────────
+  // ── Sheet 4: Final Rate Card ─────────────────────────────
   function renderRateCard() {
     const tbody = document.getElementById('rateCardBody');
     if (!tbody) return;
-
-    // Recompute loaded PMPM per age band
-    const data = PRICING_DATA.claimsExperience;
-    const bands = data.ageBands;
-    const years = Object.keys(data.memberMonths);
-
-    const purePremByBand = bands.map((_, idx) => {
-      let totalIC = 0, totalMM = 0;
-      years.forEach(uy => {
-        totalIC += data.incurredClaims[uy][idx];
-        totalMM += data.memberMonths[uy][idx];
-      });
-      return totalIC / totalMM * 1000;
-    });
-
-    const trendFactor = Math.pow(1 + trendRate, trendPeriod);
-    const trendedPP = purePremByBand.map(pp => pp * trendFactor);
-    const manualPP = trendedPP.map(pp => pp * 1.05);
-    const blendedPP = trendedPP.map((exp, i) => credibility * exp + (1 - credibility) * manualPP[i]);
-    const totalLoadingPct = loadings.reduce((acc, l) => acc + l.pct, 0);
-    const loadedPP = blendedPP.map(pp => pp / (1 - totalLoadingPct));
-
-    const planRel = PRICING_DATA.rateBuild.planRelativities;
-
-    let html = '';
-    bands.forEach((band, idx) => {
-      html += `<tr><td class="row-header">${band}</td>`;
-      planRel.forEach(plan => {
-        const rate = loadedPP[idx] * plan.relativity;
-        html += `<td class="num-col highlight" style="font-family: var(--font-mono);">$${rate.toFixed(0)}</td>`;
-      });
-      // Annual equivalent for Gold (representative)
-      const annualGold = loadedPP[idx] * planRel[2].relativity * 12;
-      html += `<td class="num-col" style="font-family: var(--font-mono); color: var(--text-muted);">$${(annualGold / 1000).toFixed(1)}k</td>`;
-      html += `</tr>`;
-    });
-
-    tbody.innerHTML = html;
+    const m = Model.compute(), planRel = PRICING_DATA.rateBuild.planRelativities;
+    tbody.innerHTML = m.rows.map(r => {
+      const bronzeBase = r.indicated / m.avgPlanRel;   // experience is an all-plan average, so rebase to Bronze
+      return `<tr><td class="row-header">${r.band}</td>` +
+        planRel.map(p => `<td class="num-col highlight" style="font-family: var(--font-mono);">${Currency.d(bronzeBase * p.relativity)}</td>`).join('') +
+        `<td class="num-col" style="font-family: var(--font-mono); color: var(--text-muted);">${Currency.dk(bronzeBase * planRel[2].relativity * 12)}</td></tr>`;
+    }).join('');
+    const note = document.getElementById('rateCardNote');
+    if (note) note.textContent = `Indicated all-plan PMPM ÷ ${m.avgPlanRel.toFixed(3)} (lives-weighted plan relativity) = Bronze base, then × plan relativity.`;
   }
 
-  // ── Public methods for inline editable loadings ───────────
-  function updateLoading(index, value) {
-    loadings[index].pct = parseFloat(value) / 100 || 0;
-    renderRateBuild();
-    renderRateCard();
+  // ── Public methods ───────────────────────────────────────
+  function rerender() { renderRateBuild(); renderRateCard(); renderTrendFactors(); if (typeof OverviewModule !== 'undefined') OverviewModule.init(); if (typeof Insights !== 'undefined') Insights.render(); }
+  function updateLoading(i, v) { Model.setLoading(i, (parseFloat(v) || 0) / 100); rerender(); }
+  function updateTrend(v) { Model.setTrend((parseFloat(v) || 0) / 100); rerender(); }
+  function updateCV(v) { Model.setCV(Math.max(0, parseFloat(v) || 0)); rerender(); }
+  function syncInputs() {
+    const t = document.getElementById('trendRateInput'), c = document.getElementById('cvInput');
+    if (t) t.value = (Model.state.trend * 100).toFixed(1);
+    if (c) c.value = Model.state.cv;
   }
 
-  function updateTrend(value) {
-    trendRate = parseFloat(value) / 100 || 0;
-    renderRateBuild();
-    renderRateCard();
-    renderTrendFactors();
-  }
-
-  function updateCredibility(value) {
-    credibility = parseFloat(value) / 100 || 0;
-    renderRateBuild();
-    renderRateCard();
-  }
-
-  return {
-    init,
-    renderAllSheets,
-    updateLoading,
-    updateTrend,
-    updateCredibility
-  };
+  return { init, renderAllSheets, updateLoading, updateTrend, updateCV, syncInputs };
 })();
